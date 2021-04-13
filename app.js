@@ -23,13 +23,13 @@ let firestore = new Map();
 function clean({ documents }) {
   let apis = new Map();
   documents.forEach(({ fields }) => {
-    console.log(fields);
     redirect = fields.redirect.stringValue;
     update_time = fields.update_time.numberValue || 60;
 
     let json = {
       redirect: redirect,
       update_time: update_time,
+      last_updated: 0,
     };
     apis.set(`/${fields.name.stringValue}`, json);
   });
@@ -38,11 +38,21 @@ function clean({ documents }) {
 
 const requestListener = function (req, res) {
   if (firestore.has(req.url)) {
-    res.writeHead(200);
-    res.end(firestore.get(req.url).redirect);
+    api = firestore.get(req.url);
+    fetch(api.redirect)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        res.writeHead(200);
+        res.end(JSON.stringify(data));
+      })
+      .catch((err) => {
+        res.writeHead(500);
+        res.end("Service Unavailable");
+      });
   } else {
     res.writeHead(404);
-    res.end("404");
+    res.end("Service Not Found");
   }
 };
 
