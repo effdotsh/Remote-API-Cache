@@ -36,8 +36,6 @@ function clean({ documents }) {
 const requestListener = function (req, res) {
   if (firestore.has(req.url)) {
     api = firestore.get(req.url);
-    res.writeHead(200);
-    res.end(JSON.stringify(api));
     if (Date.now() - api.last_updated > api.update_time * 60 * 1000) {
       fetch(api.redirect)
         .then((response) => response.json())
@@ -49,7 +47,7 @@ const requestListener = function (req, res) {
         })
         .catch((err) => {
           res.writeHead(500);
-          res.end(JSON.stringify(err));
+          res.end("Service Unavailable");
         });
     } else {
       res.writeHead(200);
