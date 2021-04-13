@@ -3,7 +3,6 @@ const { url } = require("inspector");
 const fetch = require("node-fetch");
 // require("dotenv").config();
 
-
 const PORT = process.env.PORT || 3000;
 const dbName = process.env.NAME;
 const collection = process.env.COLLECTION;
@@ -37,20 +36,22 @@ function clean({ documents }) {
 const requestListener = function (req, res) {
   if (firestore.has(req.url)) {
     api = firestore.get(req.url);
-    if(Date.now()-api.last_updated > api.update_time * 60 * 1000){
+    res.writeHead(200);
+    res.end(JSON.stringify(api));
+    if (Date.now() - api.last_updated > api.update_time * 60 * 1000) {
       fetch(api.redirect)
         .then((response) => response.json())
         .then((data) => {
           res.writeHead(200);
           res.end(JSON.stringify(data));
-          api.last_updated = Date.now()
-          api.cache = data
+          api.last_updated = Date.now();
+          api.cache = data;
         })
         .catch((err) => {
           res.writeHead(500);
-          res.end("Service Unavailable");
+          res.end(JSON.stringify(err));
         });
-    }else{
+    } else {
       res.writeHead(200);
       res.end(JSON.stringify(api.cache));
     }
@@ -60,11 +61,12 @@ const requestListener = function (req, res) {
   }
 };
 
-const firestore_url = `https://firestore.googleapis.com/v1/projects/${dbName}/databases/(default)/documents/${collection}?key=${key}`;
+const firestore_url =
+  `https://firestore.googleapis.com/v1/projects/${dbName}/databases/(default)/documents/${collection}?key=${key}`;
 
 request(firestore_url).then((out) => {
   firestore = clean(out);
-  console.log(firestore)
+  console.log(firestore);
   const server = http.createServer(requestListener);
   server.listen(PORT);
 });
