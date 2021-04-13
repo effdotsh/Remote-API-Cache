@@ -1,13 +1,10 @@
 const http = require("http");
 const { url } = require("inspector");
 const fetch = require("node-fetch");
+// require("dotenv").config();
 
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
-}
 
 const PORT = process.env.PORT || 3000;
-
 const dbName = process.env.NAME;
 const collection = process.env.COLLECTION;
 const key = process.env.KEY;
@@ -44,7 +41,6 @@ const requestListener = function (req, res) {
       fetch(api.redirect)
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
           res.writeHead(200);
           res.end(JSON.stringify(data));
           api.last_updated = Date.now()
@@ -68,6 +64,7 @@ const firestore_url = `https://firestore.googleapis.com/v1/projects/${dbName}/da
 
 request(firestore_url).then((out) => {
   firestore = clean(out);
+  console.log(firestore)
   const server = http.createServer(requestListener);
-  server.listen(8080);
+  server.listen(PORT);
 });
