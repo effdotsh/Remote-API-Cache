@@ -30,6 +30,7 @@ function clean({ documents }) {
       redirect: redirect,
       update_time: update_time,
       last_updated: 0,
+      cache: {},
     };
     apis.set(`/${fields.name.stringValue}`, json);
   });
@@ -39,17 +40,24 @@ function clean({ documents }) {
 const requestListener = function (req, res) {
   if (firestore.has(req.url)) {
     api = firestore.get(req.url);
-    fetch(api.redirect)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        res.writeHead(200);
-        res.end(JSON.stringify(data));
-      })
-      .catch((err) => {
-        res.writeHead(500);
-        res.end("Service Unavailable");
-      });
+    if(Date.now()-api.last_updated > api.update_time * 60 * 1000){
+      fetch(api.redirect)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          res.writeHead(200);
+          res.end(JSON.stringify(data));
+          api.last_updated = Date.now()
+          api.cache = data
+        })
+        .catch((err) => {
+          res.writeHead(500);
+          res.end("Service Unavailable");
+        });
+    }else{
+      res.writeHead(200);
+      res.end(JSON.stringify(api.cache));
+    }
   } else {
     res.writeHead(404);
     res.end("Service Not Found");
