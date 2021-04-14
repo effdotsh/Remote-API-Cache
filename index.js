@@ -24,7 +24,7 @@ function clean({ documents }) {
   let apis = new Map();
   documents.forEach(({ fields }) => {
     redirect = fields.redirect.stringValue;
-    update_time = fields.update_time.numberValue || 60;
+    update_time = fields.update_time?.numberValue || 60;
 
     let json = {
       redirect: redirect,
