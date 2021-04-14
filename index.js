@@ -5,7 +5,7 @@ const app = express();
 app.use(cors());
 
 const fetch = require("node-fetch");
-// require("dotenv").config();
+require("dotenv").config();
 
 const PORT = process.env.PORT || 3000;
 const dbName = process.env.NAME;
@@ -50,7 +50,6 @@ app.get("*", (req, res) => {
           api.cache = data;
         })
         .catch((err) => {
-          console.log(err);
           res.status(500).send("Service Unavailable");
         });
     } else {
@@ -66,9 +65,6 @@ const firestore_url =
 
 request(firestore_url).then((out) => {
   firestore = clean(out);
-  console.log(firestore);
 
-  app.listen(PORT, () => {
-    console.log(`http://localhost:${PORT}`);
-  });
+  app.listen(PORT);
 });
