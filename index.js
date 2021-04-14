@@ -18,7 +18,7 @@ const request = async (url) => {
   return await json;
 };
 
-let firestore = new Map();
+let firebase = new Map();
 
 function clean({ documents }) {
   let apis = new Map();
@@ -38,8 +38,8 @@ function clean({ documents }) {
 }
 
 app.get("*", (req, res) => {
-  if (firestore.has(req.url)) {
-    api = firestore.get(req.url);
+  if (firebase.has(req.url)) {
+    let api = firebase.get(req.url);
     if (Date.now() - api.last_updated > api.update_time * 60 * 1000) {
       fetch(api.redirect)
         .then((response) => response.json())
@@ -64,7 +64,7 @@ const firestore_url =
   `https://firestore.googleapis.com/v1/projects/${dbName}/databases/(default)/documents/${collection}?key=${key}`;
 
 request(firestore_url).then((out) => {
-  firestore = clean(out);
+  firebase = clean(out);
 
   app.listen(PORT);
 });
